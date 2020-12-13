@@ -1,12 +1,13 @@
 #!/bin/bash
 BL1="Linux In A Box lab server, PostInstall configuration   [====/"
-BL2="2020-09-07 for CentOS 8.2 x64                          // "
+BL2="2020-12-13 for CentOS 8.2 x64                          // "
 BL3="                                                           //  "
 BL4="                                                          //   "
-KICKSTARTRELEASE="Linux server1 kickstart v2.0"
+KICKSTARTRELEASE="Linux server1 kickstart v2.1"
 
 echo ""
 echo "${BL1}"; echo "${BL2}"; echo "${BL3}"; echo "${BL4}"
+echo "" 
 
 FTPDIR=/var/ftp/pub
 PITD=`mktemp -d`
@@ -61,6 +62,10 @@ grep -q "^CentOS Linux release 8.2.2004 (Core)" /etc/redhat-release && DETECTEDO
 popd &>/dev/null
 
 [ -d ${FTPDIR}/ ] || mkdir -p ${FTPDIR}/
+
+echo "This script depends requirees that you have already copied your CentOS install iso to /root and the iso must be named centos.iso"
+echo "Any other name for the iso will cause the script to fail in a truly epic manner!"
+echo "To copy your iso, you can run the following command **cp /dev/sr0 /root/centos.iso**"
 
 `echo "bG9nZ2VyIFRoaXMgd2FzIGEgdHJpdW1waC4K" | base64 -d`
 echo "Passed sanity checks, copying small files and setting up links."
