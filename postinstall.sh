@@ -76,7 +76,7 @@ echo "${KICKSTARTRELEASE}" > /etc/kickstart-release
 
 cp -af ${MPOINT}/ftppub/* ${FTPDIR}/
 cp -f ${MPOINT}/breakme /usr/local/sbin/
-cp -f ${MPOINT}/.scrape_dhcp_settings.sh /usr/local/sbin/scrape_dhcp_settings.sh
+cp -f ${MPOINT}/scrape_dhcp_settings.sh /usr/local/sbin/scrape_dhcp_settings.sh
 chmod 555 /usr/local/sbin/breakme
 chmod 555 /usr/local/sbin/scrape_dhcp_settings.sh
 
