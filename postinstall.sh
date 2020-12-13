@@ -69,8 +69,11 @@ echo "Any other name for the iso will cause the script to fail in a truly epic m
 echo ""
 echo "To copy your iso, you can run the following command **cp /dev/sr0 /root/centos.iso**"
 sleep 5
+echo ""
 `echo "bG9nZ2VyIFRoaXMgd2FzIGEgdHJpdW1waC4K" | base64 -d`
+echo ""
 echo "Passed sanity checks, copying small files and setting up links."
+echo ""
 
 
 (echo "${BL1}"; echo "${BL2}"; echo "${BL3}"; echo "${BL4}")  >>"${LOG}"
