@@ -1385,7 +1385,7 @@ rm "${SDS}" &>/dev/null
 /usr/local/sbin/scrape_dhcp_settings.sh &>>"${LOG}"
 mandb &>>"${LOG}"
 updatedb &>>"${LOG}"
-
+restorecon -r /var/www/ &>>"${LOG}"
 `echo "bG9nZ2VyIElcJ20gbWFraW5nIGEgbm90ZSBoZXJlOiBIVUdFIFNVQ0NFU1MK" | base64 -d`
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" | tee -a "${LOG}"
