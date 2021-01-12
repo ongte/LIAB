@@ -188,7 +188,8 @@ echo " "
 echo ""
 echo ""
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-
+echo ""
+echo ""
 package_installation() {
 ISO=CentOS8.2.iso
 dd if=/root/centos.iso of=${FTPDIR}/${ISO} &>>"${LOG}"
@@ -205,13 +206,13 @@ mount ${ISOMOUNTDIR}  >>  "${LOG}"
 echo "Starting Package Installation, Please be patient as this may take a while."
 echo " " 
 echo " " 
-  echo "Applying pre-install updates." &>> "${LOG}"
+echo "Applying pre-install updates." | tee -a "${LOG}"
   yum -y update >"${PITD}/yum_update.txt" &>> "${LOG}"
-  
+echo "Updates complete, moving on to Package Installation" | tee -a "${LOG}"  
   yum install -y epel-release >> "${PITD}/yum_update.txt" &>>"${LOG}"
 echo " " 
 echo " " 
-  echo "Package installation in progress..." | tee -a "${LOG}"
+echo "Package installation in progress..." | tee -a "${LOG}"
 echo " " 
   yum -y install "@Network Servers" "@System Tools" "@Server" spax dmidecode oddjob sgpio \
     certmonger krb5-server krb5-server-ldap sssd-krb5-common krb5-workstation \
