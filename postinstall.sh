@@ -4,10 +4,12 @@ BL2="2021-01-12 for CentOS 8.2 x64                       "
 BL3="                                                    "
 BL4="                                                    "
 KICKSTARTRELEASE="Linux server1 kickstart v3.0"
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 
 echo ""
 echo "${BL1}"; echo "${BL2}"; echo "${BL3}"; echo "${BL4}"
 echo "" 
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 
 FTPDIR=/var/ftp/pub
 PITD=`mktemp -d`
