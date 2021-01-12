@@ -3,6 +3,7 @@
 PITD=`mktemp -d`
 LOG="${PITD}/postinstall.log"
 #lets create a copy of the iso to use in the environemt
+echo " " 
 echo "Please ensure that your CentOS Installation ISO is attached to your VM!"
 echo " " 
 echo "Creating copy of your ISO, please be patient as this will take a few mintues!"
