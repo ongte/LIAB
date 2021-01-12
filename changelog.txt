@@ -167,3 +167,13 @@ server-side config fixed to require manual installs for elinks & lftp.
   Server v2.0
   	Replaced all CentOS 7.x with CentOS 8.2
 	LDAP no longer works. Everything else should work fine. 
+2021-01-12	
+  Server v3.0	
+  	It has been a while since we worked on this, but everything has been
+	updated to CentOS8.2. LDAP still doesn't work and has been removed, I
+	might replace it with IPA one of these days.
+	The name has been changed from RHIAB to LIAB so we don't get in
+	trouble.
+	The biggest update here is that the installation has been completely automated
+	and the need for the 2nd ISO file has been eliminated as we are
+	storing and pulling all files from github. 
