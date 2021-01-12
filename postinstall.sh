@@ -1,8 +1,8 @@
 #!/bin/bash
-BL1="Linux In A Box lab server, PostInstall configuration   [====/"
-BL2="2021-01-12 for CentOS 8.2 x64                         	// "
-BL3="                                                          //  "
-BL4="                                                         //   "
+BL1="Linux In A Box lab server, PostInstall configuration"
+BL2="2021-01-12 for CentOS 8.2 x64                       "
+BL3="                                                    "
+BL4="                                                    "
 KICKSTARTRELEASE="Linux server1 kickstart v3.0"
 
 echo ""
@@ -80,11 +80,6 @@ chmod 555 /usr/local/sbin/breakme
 chmod 555 /usr/local/sbin/scrape_dhcp_settings.sh
 
 ###############################################################################################
-echo ""
-echo ""
-echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-echo ""
-echo ""
 
 network_config() {
 echo " " 
@@ -193,8 +188,7 @@ echo " "
 echo ""
 echo ""
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-echo ""
-echo ""
+
 package_installation() {
 ISO=CentOS8.2.iso
 dd if=/root/centos.iso of=${FTPDIR}/${ISO} &>>"${LOG}"
