@@ -63,12 +63,6 @@ popd &>/dev/null
 
 [ -d ${FTPDIR}/ ] || mkdir -p ${FTPDIR}/
 
-echo "This script requires that you have already copied your CentOS install iso to /root and the iso must be named centos.iso"
-echo ""
-echo "Any other name for the iso will cause the script to fail in a truly epic manner!"
-echo ""
-echo "To copy your iso, you can run the following command **cp /dev/sr0 /root/centos.iso**"
-sleep 5
 echo ""
 `echo "bG9nZ2VyIFRoaXMgd2FzIGEgdHJpdW1waC4K" | base64 -d`
 echo ""
