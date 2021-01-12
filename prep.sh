@@ -14,7 +14,7 @@ echo " "
 echo "Setting up PostInstall Script Environment"
 #this command will install git on the server
 yum install -y git &>>"${LOG}"
-#this command will give a temporary working directory
+#this command will give us a temporary working directory
 OUT="$(mktemp -d /run/tmp.XXX)"
 cd $OUT
 #this command will clone the LIAB repo to the local machine 
