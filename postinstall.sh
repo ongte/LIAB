@@ -68,7 +68,7 @@ popd &>/dev/null
 echo ""
 `echo "bG9nZ2VyIFRoaXMgd2FzIGEgdHJpdW1waC4K" | base64 -d`
 echo ""
-echo "Passed sanity checks, copying small files and setting up links."
+echo "Passed sanity checks, now we deploy and use the setup magic."
 echo ""
 
 
@@ -518,7 +518,7 @@ systemctl start named.service &>>"${LOG}"
 ###########################################################################################################
 
 tftp_config(){
-echo "   Configuring TFTP and PXE Services" | tee -a "${LOG}"
+echo "   Configuring TFTP Service" | tee -a "${LOG}"
 touch /etc/xinetd.d/tftp
 cat >/etc/xinetd.d/tftp <<EOF
 # default: off
@@ -547,6 +547,7 @@ sleep 2
 echo "Checking xinetd.service and starting if still needed"  &>>"${LOG}"
 ( systemctl is-active xinetd.service || systemctl start xinetd.service ) &>>"${LOG}"
 
+echo "   Configuring PXE Service" | tee -a "${LOG}"
 mkdir -p /var/lib/tftpboot/pxelinux.cfg &>>"${LOG}"
 
 PXEDEFAULT=`echo "${ISOMOUNTDIRREL}" | cut -d "/" -f 1`
@@ -1101,7 +1102,7 @@ root@server1.example.com
 EOF
 
 
-echo "   Configuring student users" | tee -a "${LOG}"
+echo "   Configuring Student Users" | tee -a "${LOG}"
 for N in 1 2 3 4 5; do
   useradd -m -G smbuser user${N} &>>"${LOG}"
   echo "P@ssw0rd" | passwd --stdin user${N} &>>"${LOG}"
