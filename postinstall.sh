@@ -1030,7 +1030,7 @@ for i in `seq -w 1 ${NUMOFWS}`; do
   echo "P@ssw0rd" | passwd --stdin guest$i  &>>"${LOG}"
 done
 
-echo "   Local CA" | tee -a "${LOG}"
+echo "   Configuring Certificates" | tee -a "${LOG}"
 mkdir -p /etc/pki/CA/private
 (umask 077;openssl genrsa -passout pass:cacertpass -out /etc/pki/CA/private/cakey.pem -des3 2048)  &>>"${LOG}"
 openssl req -new -x509 -passin pass:cacertpass -key /etc/pki/CA/private/cakey.pem -days 3650 >/etc/pki/CA/cacert.pem <<EOF  2>>"${LOG}"
@@ -1271,6 +1271,7 @@ podman push localhost:5000/mariadb &>>"${LOG}"
 ###################################################################################################
 
 materials_config(){
+echo "   Cleaning up loose ends" | tee -a "${LOG}"
 pushd ${FTPDIR}/materials &>/dev/null
 unzip -o ../extras.zip &>>"${LOG}"
 popd &>/dev/null
@@ -1482,6 +1483,6 @@ user_config
 misc2_config
 #ldap_config
 firewall_config
-materials_config
 containers
+materials_config
 reboot
