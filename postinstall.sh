@@ -234,14 +234,16 @@ echo ""
 ############################################################################################
 
 misc1_config() {
+	
 echo "Setting up general stuff." | tee -a "${LOG}"
+echo "   Configuing Lab Setup Magic" | tee -a "${LOG}"
 
 cat /etc/kickstart-release >>/etc/issue
 
 systemctl enable rngd.service &>>"${LOG}"
 systemctl start rngd.service  &>>"${LOG}"
 
-echo "   Internal lab routes" | tee -a "${LOG}"
+echo "   Configuring Lab Routes" | tee -a "${LOG}"
 for i in `seq 1 9`; do
   echo "172.26.$i.0/24 via 172.26.0.20$i dev ${NIC2NAME}" >>/etc/sysconfig/network-scripts/route-Internal
 done
@@ -290,7 +292,7 @@ systemctl start vsftpd.service &>>"${LOG}"
 #########################################################################################################
 
 dhcp_config(){
-echo "   Configuring DHCP" | tee -a "${LOG}"
+echo "   Configuring DHCP Service" | tee -a "${LOG}"
 sed -i.bak -e s/DHCPDARGS=/DHCPDARGS=${NIC2NAME}/ /etc/sysconfig/dhcpd
 cat >/etc/dhcp/dhcpd.conf <<EOF
 authoritative;
@@ -344,7 +346,7 @@ systemctl start dhcpd.service &>>"${LOG}"
 ####################################################################################################
 
 dns_config(){
-echo "   Configuring DNS" | tee -a "${LOG}"
+echo "   Configuring DNS Service" | tee -a "${LOG}"
 cat >/etc/named.conf <<EOF
 options {
         directory "/var/named";
@@ -516,7 +518,7 @@ systemctl start named.service &>>"${LOG}"
 ###########################################################################################################
 
 tftp_config(){
-echo "   Configuring TFTP" | tee -a "${LOG}"
+echo "   Configuring TFTP and PXE Services" | tee -a "${LOG}"
 touch /etc/xinetd.d/tftp
 cat >/etc/xinetd.d/tftp <<EOF
 # default: off
@@ -598,7 +600,7 @@ restorecon -R /var/lib/tftpboot/ &>>"${LOG}"
 ###############################################################################################################
 
 ntp_config(){
-echo "   Configuring NTP" | tee -a "${LOG}"
+echo "   Configuring NTP Service" | tee -a "${LOG}"
 cat >/etc/chrony.conf.base <<EOF
 
 stratumweight 0
@@ -641,7 +643,7 @@ systemctl start  chronyd.service &>>"${LOG}"
 
 ldap_config() {
 
-echo "   Configuring LDAP" | tee -a "${LOG}"
+echo "   Configuring LDAP Service" | tee -a "${LOG}"
 echo "Starting the new LDAP stuff" &>>"${LOG}"
 
 chown ldap:ldap /etc/openldap/certs/* &>>"${LOG}"
@@ -888,7 +890,7 @@ cp /etc/idmapd.conf ${FTPDIR}/materials/ &>>"${LOG}"
 ################################################################################################################
 
 nfs_config() {
- echo "   Configuring NFS" | tee -a "${LOG}"
+ echo "   Configuring NFS Service" | tee -a "${LOG}"
 mkdir /home/server1 &>>"${LOG}"
 mkdir -p /exports/nfssecure &>>"${LOG}"
 mkdir -p /exports/nfs{1..3} &>>"${LOG}"
@@ -930,7 +932,7 @@ systemctl start nfs-server.service &>>"${LOG}"
 ###########################################################################################################3
 
 samba_config(){
-echo "   Configuring Samba" | tee -a "${LOG}"
+echo "   Configuring Samba Service" | tee -a "${LOG}"
 
 mkdir -p /samba/{public,restricted,misc} &>>"${LOG}"
 chmod -R 0777 /samba &>>"${LOG}"
@@ -974,7 +976,7 @@ systemctl start smb.service nmb.service &>>"${LOG}"
 ##########################################################################################################3
 
 iscsi_config(){
-echo "   Configuring iSCSI" | tee -a "${LOG}"
+echo "   Configuring iSCSI Service" | tee -a "${LOG}"
 
 mkdir -p /var/lib/target &>>"${LOG}"
 
@@ -1290,6 +1292,7 @@ cp ${FTPDIR}/materials/Moby_Dick.txt /exports/nfs2 &>>"${LOG}"
 cp ${FTPDIR}/materials/The_History_Of_The_Decline_And_Fall_Of_The_Roman_Empire.txt /samba/misc &>>"${LOG}"
 tar -xzf ${FTPDIR}/materials/ring.tgz -C /exports/nfssecure &>>"${LOG}"
 
+echo "   Removing unused Magic" | tee -a "${LOG}"
 if [ ${DONORMALCONFIG} -eq 1 ]; then
   `echo "Y2hjb24gLXQgYWRtaW5faG9tZV90IC92YXIvZnRwL3B1Yi9tYXRlcmlhbHMvc2hha2VzcGVhcmUudHh0Cg==" | base64 -d`
   SCRATCH=`mktemp`
