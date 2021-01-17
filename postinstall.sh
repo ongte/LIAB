@@ -249,13 +249,13 @@ for i in `seq 10 ${NUMOFWS}`; do
   echo "172.26.$i.0/24 via 172.26.0.2$i dev ${NIC2NAME}" >>/etc/sysconfig/network-scripts/route-Internal
 done
 
-echo "   httpd / Apache" | tee -a "${LOG}"
+echo "   Configuring Web Service" | tee -a "${LOG}"
 cd /var/www/html
 ln -s ${FTPDIR}
 systemctl enable httpd.service &>>"${LOG}"
 systemctl start httpd.service &>>"${LOG}"
 
-echo "   vsftpd" | tee -a "${LOG}"
+echo "   Configuring FTP Service" | tee -a "${LOG}"
 
 cat >/etc/vsftpd/vsftpd.conf <<EOF
 anonymous_enable=YES
@@ -290,7 +290,7 @@ systemctl start vsftpd.service &>>"${LOG}"
 #########################################################################################################
 
 dhcp_config(){
-echo "   dhcpd" | tee -a "${LOG}"
+echo "   Configuring DHCP" | tee -a "${LOG}"
 sed -i.bak -e s/DHCPDARGS=/DHCPDARGS=${NIC2NAME}/ /etc/sysconfig/dhcpd
 cat >/etc/dhcp/dhcpd.conf <<EOF
 authoritative;
@@ -344,7 +344,7 @@ systemctl start dhcpd.service &>>"${LOG}"
 ####################################################################################################
 
 dns_config(){
-echo "   named / DNS" | tee -a "${LOG}"
+echo "   Configuring DNS" | tee -a "${LOG}"
 cat >/etc/named.conf <<EOF
 options {
         directory "/var/named";
@@ -516,7 +516,7 @@ systemctl start named.service &>>"${LOG}"
 ###########################################################################################################
 
 tftp_config(){
-echo "   tftpd" | tee -a "${LOG}"
+echo "   Configuring TFTP" | tee -a "${LOG}"
 touch /etc/xinetd.d/tftp
 cat >/etc/xinetd.d/tftp <<EOF
 # default: off
@@ -598,7 +598,7 @@ restorecon -R /var/lib/tftpboot/ &>>"${LOG}"
 ###############################################################################################################
 
 ntp_config(){
-echo "   NTP / Chrony" | tee -a "${LOG}"
+echo "   Configuring NTP" | tee -a "${LOG}"
 cat >/etc/chrony.conf.base <<EOF
 
 stratumweight 0
@@ -641,7 +641,7 @@ systemctl start  chronyd.service &>>"${LOG}"
 
 ldap_config() {
 
-echo "   LDAP" | tee -a "${LOG}"
+echo "   Configuring LDAP" | tee -a "${LOG}"
 echo "Starting the new LDAP stuff" &>>"${LOG}"
 
 chown ldap:ldap /etc/openldap/certs/* &>>"${LOG}"
@@ -888,7 +888,7 @@ cp /etc/idmapd.conf ${FTPDIR}/materials/ &>>"${LOG}"
 ################################################################################################################
 
 nfs_config() {
- echo "   NFS" | tee -a "${LOG}"
+ echo "   Configuring NFS" | tee -a "${LOG}"
 mkdir /home/server1 &>>"${LOG}"
 mkdir -p /exports/nfssecure &>>"${LOG}"
 mkdir -p /exports/nfs{1..3} &>>"${LOG}"
@@ -930,7 +930,7 @@ systemctl start nfs-server.service &>>"${LOG}"
 ###########################################################################################################3
 
 samba_config(){
-echo "   Samba" | tee -a "${LOG}"
+echo "   Configuring Samba" | tee -a "${LOG}"
 
 mkdir -p /samba/{public,restricted,misc} &>>"${LOG}"
 chmod -R 0777 /samba &>>"${LOG}"
@@ -974,7 +974,7 @@ systemctl start smb.service nmb.service &>>"${LOG}"
 ##########################################################################################################3
 
 iscsi_config(){
-echo "   iSCSI" | tee -a "${LOG}"
+echo "   Configuring iSCSI" | tee -a "${LOG}"
 
 mkdir -p /var/lib/target &>>"${LOG}"
 
@@ -1019,7 +1019,7 @@ systemctl start target.service &>>"${LOG}"
 ##########################################################################################################
 
 user_config(){
-echo "   Lab Users" | tee -a "${LOG}"
+echo "   Configuring Lab Users" | tee -a "${LOG}"
 groupadd smbuser &>>"${LOG}"
 
 mkdir /home/server1 &>>"${LOG}"
@@ -1099,7 +1099,7 @@ root@server1.example.com
 EOF
 
 
-echo "   Create student users" | tee -a "${LOG}"
+echo "   Configuring student users" | tee -a "${LOG}"
 for N in 1 2 3 4 5; do
   useradd -m -G smbuser user${N} &>>"${LOG}"
   echo "P@ssw0rd" | passwd --stdin user${N} &>>"${LOG}"
@@ -1118,7 +1118,7 @@ done
 ################################################################################################################
 
 misc2_config(){
-echo "   Miscellaneous" | tee -a "${LOG}"
+echo "   Configuring Miscellaneous" | tee -a "${LOG}"
 
 mandb &>>"${LOG}"
 
@@ -1195,7 +1195,7 @@ chmod 777 "${FTPDIR}/materials/breakme1.sh"
 ##########################################################################################################################
 
 firewall_config(){
-echo "   Firewall rules" | tee -a "${LOG}"
+echo "   Configuring Firewall" | tee -a "${LOG}"
 echo "Firewall rules start" &>>"${LOG}"
 firewall-cmd --permanent --zone=external --change-interface=${NIC1NAME} &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --change-interface=${NIC2NAME} &>>"${LOG}"
@@ -1228,6 +1228,7 @@ firewall-cmd --permanent --zone=internal --add-port=32803/tcp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-port=32769/udp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-port=662/tcp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-port=662/udp &>>"${LOG}"
+firewall-cmd --permanent --zone=internal --add-port=5000/tcp &>>"${LOG}"
 systemctl restart firewalld.service &>>"${LOG}"
 sleep 10
 iptables -nvL &>>"${PITD}/iptables_nvL"
@@ -1235,6 +1236,38 @@ firewall-cmd --list-all-zones &>>"${PITD}/firewall-cmd_list-all-zones"
 echo "Firewall rules done" &>>"${LOG}"
 }
 
+###################################################################################################
+containers (){
+#assistance with commands here from Josh Davis jdavis@eoctech.edu
+echo "   Configuring Containers" | tee -a "${LOG}"
+#here we make our container registry directory
+mkdir -pv /var/lib/registry &>>"${LOG}"
+#now we setup the container registry file
+cat >"/etc/containers/registries.conf"<<EOF 
+[registries.search]
+registries = ['docker.io']
+
+[registries.insecure]
+registries = ['localhost:5000']
+
+[registries.block]
+registries = []
+EOF
+#here we create our local registry and activate it
+podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry:z --restart=always registry:2 &>>"${LOG}"
+podman generate systemd registry > /etc/systemd/system/registry-container.service &>>"${LOG}"
+systemctl daemon-reload &>>"${LOG}"
+systemctl enable --now registry-container.service &>>"${LOG}"
+#now we pull some public containers to use locally
+podman pull docker.io/library/httpd &>>"${LOG}"
+podman pull docker.io/library/mariadb &>>"${LOG}"
+#here we tag the public containers and add them to the local registry to be used
+podman tag docker.io/library/httpd localhost:5000/httpd &>>"${LOG}"
+podman tag docker.io/library/mariadb localhost:5000/mariadb &>>"${LOG}"
+podman push localhost:5000/httpd &>>"${LOG}"
+podman push localhost:5000/mariadb &>>"${LOG}"
+}
+###################################################################################################
 ###################################################################################################
 
 materials_config(){
@@ -1450,4 +1483,5 @@ misc2_config
 #ldap_config
 firewall_config
 materials_config
+containers
 reboot
