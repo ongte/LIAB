@@ -1492,7 +1492,7 @@ iscsi_config
 user_config
 misc2_config
 #ldap_config
-kerberos_config
+#kerberos_config
 firewall_config
 containers  
 materials_config
