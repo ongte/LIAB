@@ -651,57 +651,57 @@ ldap_config() {
 echo "   Configuring LDAP Service" | tee -a "${LOG}"
 echo "Starting the new LDAP stuff" &>>"${LOG}"
 
-dnf module install -y idm:DL1/{server,client}
-ipa-server-install -U -p P@ssw0rd! -a P@ssw0rd! -n EXAMPLE.COM -r EXAMPLE.COM
-firewall-cmd --permanent --add-service={ldap,ldaps,kerberos,ntp,http,https} --zone=internal
-firewall-cmd --reload
-ipactl status
-echo -e "P@ssw0rd!" | kinit admin
-klist
-ipa config-show
-systemctl enable --now nfs-server rpcbind
-firewall-cmd --permanent --add-service={nfs,mountd,rpc-bind} --zone=internal
-firewall-cmd --reload
-mkdir /home/guests
-echo '/home/guests *(rw,sync,no_subtree_check,root_squash)' >> /etc/exports
-exportfs -rav
-ipa service-add nfs/server1.example.com
-ipa config-mod --homedirectory=/home/guests --defaultshell=/bin/bash
+dnf module install -y idm:DL1/{server,client} &>>"${LOG}"
+ipa-server-install -U -p P@ssw0rd! -a P@ssw0rd! -n EXAMPLE.COM -r EXAMPLE.COM &>>"${LOG}"
+firewall-cmd --permanent --add-service={ldap,ldaps,kerberos,ntp,http,https} --zone=internal &>>"${LOG}"
+firewall-cmd --reload &>>"${LOG}"
+ipactl status &>>"${LOG}"
+echo -e "P@ssw0rd!" | kinit admin &>>"${LOG}"
+klist &>>"${LOG}"
+ipa config-show &>>"${LOG}"
+systemctl enable --now nfs-server rpcbind &>>"${LOG}"
+firewall-cmd --permanent --add-service={nfs,mountd,rpc-bind} --zone=internal &>>"${LOG}"
+firewall-cmd --reload &>>"${LOG}"
+mkdir /home/guests &>>"${LOG}"
+echo '/home/guests *(rw,sync,no_subtree_check,root_squash)' >> /etc/exports &>>"${LOG}"
+exportfs -rav &>>"${LOG}"
+ipa service-add nfs/server1.example.com &>>"${LOG}"
+ipa config-mod --homedirectory=/home/guests --defaultshell=/bin/bash &>>"${LOG}"
 
-echo -e "redhat/nredhat" | ipa user-add ipauser1 --first=ipa --last=user1 --password
-mkdir -m0750 -p /home/gusts/ipauser1
-chown 181000001:181000001 /home/gusts/ipauser1
-echo -e "redhat/nredhat" | ipa user-add ipauser2 --first=ipa --last=user2 --password
-mkdir -m0750 -p /home/gusts/ipauser2
-chown 181000002:181000002 /home/gusts/ipauser2
-echo -e "redhat/nredhat" | ipa user-add ipauser3 --first=ipa --last=user3 --password
-mkdir -m0750 -p /home/gusts/ipauser3
-chown 181000003:181000003 /home/gusts/ipauser3
-echo -e "redhat/nredhat" | ipa user-add ipauser4 --first=ipa --last=user4 --password
-mkdir -m0750 -p /home/gusts/ipauser4
-chown 181000004:181000004 /home/gusts/ipauser4
-echo -e "redhat/nredhat" | ipa user-add ipauser5 --first=ipa --last=user5 --password
-mkdir -m0750 -p /home/gusts/ipauser5
-chown 181000005:181000005 /home/gusts/ipauser5
+echo -e "redhat/nredhat" | ipa user-add ipauser1 --first=ipa --last=user1 --password &>>"${LOG}"
+mkdir -m0750 -p /home/gusts/ipauser1 &>>"${LOG}"
+chown 181000001:181000001 /home/gusts/ipauser1 &>>"${LOG}"
+echo -e "redhat/nredhat" | ipa user-add ipauser2 --first=ipa --last=user2 --password &>>"${LOG}"
+mkdir -m0750 -p /home/gusts/ipauser2 &>>"${LOG}"
+chown 181000002:181000002 /home/gusts/ipauser2 &>>"${LOG}"
+echo -e "redhat/nredhat" | ipa user-add ipauser3 --first=ipa --last=user3 --password &>>"${LOG}"
+mkdir -m0750 -p /home/gusts/ipauser3 &>>"${LOG}"
+chown 181000003:181000003 /home/gusts/ipauser3 &>>"${LOG}"
+echo -e "redhat/nredhat" | ipa user-add ipauser4 --first=ipa --last=user4 --password &>>"${LOG}"
+mkdir -m0750 -p /home/gusts/ipauser4 &>>"${LOG}"
+chown 181000004:181000004 /home/gusts/ipauser4 &>>"${LOG}"
+echo -e "redhat/nredhat" | ipa user-add ipauser5 --first=ipa --last=user5 --password &>>"${LOG}"
+mkdir -m0750 -p /home/gusts/ipauser5 &>>"${LOG}"
+chown 181000005:181000005 /home/gusts/ipauser5 &>>"${LOG}"
 
-ipa hostadd --ip-address 172.26.0.201 station1.example.com
-ipa hostadd --ip-address 172.26.0.202 station2.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.202
-ipa hostadd --ip-address 172.26.0.203 station3.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.203
-ipa hostadd --ip-address 172.26.0.204 station4.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.204
-ipa hostadd --ip-address 172.26.0.205 station5.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.205
-ipa hostadd --ip-address 172.26.0.206 station6.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.206
-ipa hostadd --ip-address 172.26.0.207 station7.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.207
-ipa hostadd --ip-address 172.26.0.208 station8.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.208
-ipa hostadd --ip-address 172.26.0.209 station9.example.com
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.209
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.201
+ipa hostadd --ip-address 172.26.0.201 station1.example.com &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.202 station2.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.202 &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.203 station3.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.203 &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.204 station4.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.204 &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.205 station5.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.205 &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.206 station6.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.206 &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.207 station7.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.207 &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.208 station8.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.208 &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.209 station9.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.209 &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.201 &>>"${LOG}"
 
 echo "Finished the new LDAP stuff" &>>"${LOG}"
 }
