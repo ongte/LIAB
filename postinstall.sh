@@ -547,6 +547,9 @@ systemctl reload xinetd.service  &>>"${LOG}"
 sleep 2
 echo "Checking xinetd.service and starting if still needed"  &>>"${LOG}"
 ( systemctl is-active xinetd.service || systemctl start xinetd.service ) &>>"${LOG}"
+}
+###############################################################################################################
+pxe_config() {
 
 echo "   Configuring PXE Service" | tee -a "${LOG}"
 mkdir -p /var/lib/tftpboot/pxelinux.cfg &>>"${LOG}"
@@ -648,88 +651,57 @@ ldap_config() {
 echo "   Configuring LDAP Service" | tee -a "${LOG}"
 echo "Starting the new LDAP stuff" &>>"${LOG}"
 
-chown ldap:ldap /etc/openldap/certs/* &>>"${LOG}"
-chmod 600 /etc/openldap/certs/priv.pem &>>"${LOG}"
-(cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG; slaptest) &>>"${LOG}"
-chown ldap:ldap /var/lib/ldap/* &>>"${LOG}"
-systemctl enable slapd.service &>>"${LOG}"
-systemctl start slapd.service &>>"${LOG}"
-ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f /etc/openldap/schema/cosine.ldif &>>"${LOG}"
-ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f /etc/openldap/schema/nis.ldif &>>"${LOG}"
-cp /etc/openldap/certs/cert.pem /var/www/html/pub/materials/ &>>"${LOG}"
+dnf module install -y idm:DL1/{server,client}
+ipa-server-install -U -p P@ssw0rd! -a P@ssw0rd! -n EXAMPLE.COM -r EXAMPLE.COM
+firewall-cmd --permanent --add-service={ldap,ldaps,kerberos,ntp,http,https} --zone=internal
+firewall-cmd --reload
+ipactl status
+echo -e "P@ssw0rd!" | kinit admin
+klist
+ipa config-show
+systemctl enable --now nfs-server rpcbind
+firewall-cmd --permanent --add-service={nfs,mountd,rpc-bind} --zone=internal
+firewall-cmd --reload
+mkdir /home/guests
+echo '/home/guests *(rw,sync,no_subtree_check,root_squash)' >> /etc/exports
+exportfs -rav
+ipa service-add nfs/server1.example.com
+ipa config-mod --homedirectory=/home/guests --defaultshell=/bin/bash
 
+echo -e "redhat/nredhat" | ipa user-add ipauser1 --first=ipa --last=user1 --password
+mkdir -m0750 -p /home/gusts/ipauser1
+chown 181000001:181000001 /home/gusts/ipauser1
+echo -e "redhat/nredhat" | ipa user-add ipauser2 --first=ipa --last=user2 --password
+mkdir -m0750 -p /home/gusts/ipauser2
+chown 181000002:181000002 /home/gusts/ipauser2
+echo -e "redhat/nredhat" | ipa user-add ipauser3 --first=ipa --last=user3 --password
+mkdir -m0750 -p /home/gusts/ipauser3
+chown 181000003:181000003 /home/gusts/ipauser3
+echo -e "redhat/nredhat" | ipa user-add ipauser4 --first=ipa --last=user4 --password
+mkdir -m0750 -p /home/gusts/ipauser4
+chown 181000004:181000004 /home/gusts/ipauser4
+echo -e "redhat/nredhat" | ipa user-add ipauser5 --first=ipa --last=user5 --password
+mkdir -m0750 -p /home/gusts/ipauser5
+chown 181000005:181000005 /home/gusts/ipauser5
 
-cat <<EOF >/etc/openldap/changes.ldif 2>>"${LOG}"
-dn: olcDatabase={2}hdb,cn=config
-changetype: modify
-replace: olcSuffix
-olcSuffix: dc=example,dc=com
-
-dn: olcDatabase={2}hdb,cn=config
-changetype: modify
-replace: olcRootDN
-olcRootDN: cn=Manager,dc=example,dc=com
-
-dn: olcDatabase={2}hdb,cn=config
-changetype: modify
-replace: olcRootPW
-olcRootPW: {SSHA}5ya72uj/eu56gNRYC1l/tW2XJBsO7/RJ
-
-dn: cn=config
-changetype: modify
-replace: olcTLSCertificateFile
-olcTLSCertificateFile: /etc/openldap/certs/cert.pem
-
-dn: cn=config
-changetype: modify
-replace: olcTLSCertificateKeyFile
-olcTLSCertificateKeyFile: /etc/openldap/certs/priv.pem
-
-dn: cn=config
-changetype: modify
-replace: olcLogLevel
-olcLogLevel: -1
-
-dn: olcDatabase={1}monitor,cn=config
-changetype: modify
-replace: olcAccess
-olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" read by dn.base="cn=Manager,dc=example,dc=com" read by * none
-EOF
-
-ldapmodify -Y EXTERNAL -H ldapi:/// -f /etc/openldap/changes.ldif &>>"${LOG}"
-
-cat <<EOF >/etc/openldap/base.ldif 2>>"${LOG}"
-dn: dc=example,dc=com
-dc: example
-objectClass: top
-objectClass: domain
-
-dn: ou=People,dc=example,dc=com
-ou: People
-objectClass: top
-objectClass: organizationalUnit
-
-dn: ou=Group,dc=example,dc=com
-ou: Group
-objectClass: top
-objectClass: organizationalUnit
-EOF
-
-ldapadd -x -w redhat -D cn=Manager,dc=example,dc=com -f /etc/openldap/base.ldif &>>"${LOG}"
-
-pushd /usr/share/migrationtools &>>"${LOG}"
-sed -e s/padl/example/ -e s/ou=Group/ou=Groups/ migrate_common.ph -i.bak  &>>"${LOG}"
-
-grep "guest" /etc/passwd > passwd 2>>"${LOG}"
-./migrate_passwd.pl passwd users.ldif &>>"${LOG}"
-ldapadd -x -w redhat -D cn=Manager,dc=example,dc=com -f users.ldif &>>"${LOG}"
-grep "guest" /etc/group > group 2>>"${LOG}"
-./migrate_group.pl group groups.ldif &>>"${LOG}"
-ldapadd -x -w redhat -D cn=Manager,dc=example,dc=com -f groups.ldif &>>"${LOG}"
-popd &>>"${LOG}"
-
-echo "Testing the new LDAP stuff" &>>"${LOG}"
-ldapsearch -x cn=guest01 -b dc=example,dc=com &>>"${LOG}"
+ipa hostadd --ip-address 172.26.0.201 station1.example.com
+ipa hostadd --ip-address 172.26.0.202 station2.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.202
+ipa hostadd --ip-address 172.26.0.203 station3.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.203
+ipa hostadd --ip-address 172.26.0.204 station4.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.204
+ipa hostadd --ip-address 172.26.0.205 station5.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.205
+ipa hostadd --ip-address 172.26.0.206 station6.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.206
+ipa hostadd --ip-address 172.26.0.207 station7.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.207
+ipa hostadd --ip-address 172.26.0.208 station8.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.208
+ipa hostadd --ip-address 172.26.0.209 station9.example.com
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.209
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.201
 
 echo "Finished the new LDAP stuff" &>>"${LOG}"
 }
@@ -1485,6 +1457,7 @@ misc1_config
 dhcp_config
 dns_config
 tftp_config
+pxe_config
 ntp_config
 nfs_config
 samba_config
@@ -1492,7 +1465,7 @@ iscsi_config
 user_config
 misc2_config
 #ldap_config
-#kerberos_config
+kerberos_config
 firewall_config
 containers  
 materials_config
