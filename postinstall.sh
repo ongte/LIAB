@@ -1,6 +1,6 @@
 #!/bin/bash
 BL1="Linux In A Box lab server, PostInstall configuration"
-BL2="2021-01-12 for CentOS 8.2 x64                       "
+BL2="2021-01-17 for CentOS 8.2 x64                       "
 BL3="                                                    "
 BL4="                                                    "
 KICKSTARTRELEASE="Linux server1 kickstart v3.0"
@@ -1280,7 +1280,7 @@ echo "container config complete" &>>"${LOG}"
 ###################################################################################################
 
 materials_config(){
-echo "   Cleaning up loose ends" | tee -a "${LOG}"
+echo "   Tying up loose ends" | tee -a "${LOG}"
 pushd ${FTPDIR}/materials &>/dev/null
 unzip -o ../extras.zip &>>"${LOG}"
 popd &>/dev/null
@@ -1439,7 +1439,7 @@ updatedb &>>"${LOG}"
 restorecon -Rv /var/www/* &>>"${LOG}"
 restorecon -Rv /var/ftp/* &>>"${LOG}"
 `echo "bG9nZ2VyIElcJ20gbWFraW5nIGEgbm90ZSBoZXJlOiBIVUdFIFNVQ0NFU1MK" | base64 -d`
-
+echo "Loose ends tied up, extra magic removed"
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" | tee -a "${LOG}"
 echo "Creating troubleshooting log bundle.  Please IGNORE ANY ERRORS you see." | tee -a "${LOG}"
 history &> "${PITD}/history.txt"
