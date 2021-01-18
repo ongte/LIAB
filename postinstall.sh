@@ -1464,7 +1464,7 @@ samba_config
 iscsi_config
 user_config
 misc2_config
-#ldap_config
+ldap_config
 kerberos_config
 firewall_config
 containers  
