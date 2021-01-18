@@ -1259,7 +1259,7 @@ registries = []
 EOF
 #here we create our local registry and activate it
 podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry:z --restart=always registry:2 &>>"${LOG}"
-podman generate systemd registry > /etc/systemd/system/registry-container.service &>>"${LOG}"
+podman generate systemd registry > /etc/systemd/system/registry-container.service 
 chmod 755 /etc/systemd/system/registry-container.service &>>"${LOG}"
 systemctl daemon-reload &>>"${LOG}"
 systemctl enable --now registry-container.service &>>"${LOG}"
@@ -1490,6 +1490,6 @@ user_config
 misc2_config
 #ldap_config
 firewall_config
-#containers  
+containers  
 materials_config
 reboot
