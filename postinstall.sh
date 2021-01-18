@@ -1263,8 +1263,6 @@ podman generate systemd registry > /etc/systemd/system/registry-container.servic
 chmod 755 /etc/systemd/system/registry-container.service &>>"${LOG}"
 systemctl daemon-reload &>>"${LOG}"
 systemctl enable --now registry-container.service &>>"${LOG}"
-#systemctl enable podman &>>"${LOG}"
-#systemctl start podman &>>"${LOG}"
 #now we pull some public containers to use locally
 podman pull docker.io/library/httpd &>>"${LOG}"
 podman pull docker.io/library/mariadb &>>"${LOG}"
@@ -1491,6 +1489,6 @@ user_config
 misc2_config
 #ldap_config
 firewall_config
-containers 
+#containers - disabled as it isnt working quite right - will try again later 
 materials_config
 reboot
