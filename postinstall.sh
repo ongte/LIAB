@@ -1271,6 +1271,7 @@ podman tag docker.io/library/httpd server1:5000/httpd &>>"${LOG}"
 podman tag docker.io/library/mariadb server1:5000/mariadb &>>"${LOG}"
 podman push server1:5000/httpd &>>"${LOG}"
 podman push server1:5000/mariadb &>>"${LOG}"
+echo "container config complete" &>>"${LOG}"
 }
 ###################################################################################################
 ###################################################################################################
@@ -1489,6 +1490,6 @@ user_config
 misc2_config
 #ldap_config
 firewall_config
-#containers - disabled as it isnt working quite right - will try again later 
+containers  
 materials_config
 reboot
