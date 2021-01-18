@@ -176,6 +176,7 @@ ethtool ${NIC2NAME} &>>"${PITD}/ethtool_2.txt"
 
 [ ! -f /etc/hosts_orig ] && cp -a /etc/hosts /etc/hosts_orig || cp -a /etc/hosts_orig /etc/hosts
 echo "172.26.0.1  server1.example.com  server1" >> /etc/hosts
+echo "172.26.0.1  server1.registry.example.com  registry" >> /etc/hosts
 echo "server1.example.com" > /etc/hostname
 hostname server1
 
@@ -236,7 +237,7 @@ echo ""
 misc1_config() {
 	
 echo "Setting up general stuff." | tee -a "${LOG}"
-echo "   Configuing Lab Setup Magic" | tee -a "${LOG}"
+echo "   Configuring Lab Setup Magic" | tee -a "${LOG}"
 
 cat /etc/kickstart-release >>/etc/issue
 
@@ -1259,8 +1260,11 @@ EOF
 #here we create our local registry and activate it
 podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry:z --restart=always registry:2 &>>"${LOG}"
 podman generate systemd registry > /etc/systemd/system/registry-container.service &>>"${LOG}"
+chmod 755 /etc/systemd/system/registry-container.service &>>"${LOG}"
 systemctl daemon-reload &>>"${LOG}"
-systemctl enable --now registry-container.service &>>"${LOG}"
+#systemctl enable --now registry-container.service &>>"${LOG}"
+systemctl enable podman &>>"${LOG}"
+systemctl start podman &>>"${LOG}"
 #now we pull some public containers to use locally
 podman pull docker.io/library/httpd &>>"${LOG}"
 podman pull docker.io/library/mariadb &>>"${LOG}"
