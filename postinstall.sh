@@ -732,9 +732,12 @@ echo "Testing the new LDAP stuff" &>>"${LOG}"
 ldapsearch -x cn=guest01 -b dc=example,dc=com &>>"${LOG}"
 
 echo "Finished the new LDAP stuff" &>>"${LOG}"
+}
 
-echo "   Kerberos" | tee -a "${LOG}"
+##############################################################################
 
+kerberos_config() {
+echo "   Configuring Kerberos" | tee -a "${LOG}"
 
 cat <<EOF | patch -b -d /var/kerberos/krb5kdc &>>"${LOG}"
 --- kdc.conf_orig       2014-03-11 19:22:53.000000000 +0000
@@ -1489,6 +1492,7 @@ iscsi_config
 user_config
 misc2_config
 #ldap_config
+kerberos_config
 firewall_config
 containers  
 materials_config
