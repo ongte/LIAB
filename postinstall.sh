@@ -1252,7 +1252,7 @@ cat >"/etc/containers/registries.conf"<<EOF
 registries = ['docker.io']
 
 [registries.insecure]
-registries = ['localhost:5000']
+registries = ['server1:5000']
 
 [registries.block]
 registries = []
@@ -1262,17 +1262,17 @@ podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/va
 podman generate systemd registry > /etc/systemd/system/registry-container.service &>>"${LOG}"
 chmod 755 /etc/systemd/system/registry-container.service &>>"${LOG}"
 systemctl daemon-reload &>>"${LOG}"
-#systemctl enable --now registry-container.service &>>"${LOG}"
-systemctl enable podman &>>"${LOG}"
-systemctl start podman &>>"${LOG}"
+systemctl enable --now registry-container.service &>>"${LOG}"
+#systemctl enable podman &>>"${LOG}"
+#systemctl start podman &>>"${LOG}"
 #now we pull some public containers to use locally
 podman pull docker.io/library/httpd &>>"${LOG}"
 podman pull docker.io/library/mariadb &>>"${LOG}"
 #here we tag the public containers and add them to the local registry to be used
-podman tag docker.io/library/httpd localhost:5000/httpd &>>"${LOG}"
-podman tag docker.io/library/mariadb localhost:5000/mariadb &>>"${LOG}"
-podman push localhost:5000/httpd &>>"${LOG}"
-podman push localhost:5000/mariadb &>>"${LOG}"
+podman tag docker.io/library/httpd server1:5000/httpd &>>"${LOG}"
+podman tag docker.io/library/mariadb server1:5000/mariadb &>>"${LOG}"
+podman push server1:5000/httpd &>>"${LOG}"
+podman push server1:5000/mariadb &>>"${LOG}"
 }
 ###################################################################################################
 ###################################################################################################
