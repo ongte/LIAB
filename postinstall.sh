@@ -685,6 +685,7 @@ mkdir -m0750 -p /home/guests/ipauser5 &>>"${LOG}"
 chown 181000005:181000005 /home/guests/ipauser5 &>>"${LOG}"
 
 ipa host-add --ip-address 172.26.0.201 station1.example.com &>>"${LOG}"
+ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.201 &>>"${LOG}"
 ipa host-add --ip-address 172.26.0.202 station2.example.com &>>"${LOG}"
 ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.202 &>>"${LOG}"
 ipa host-add --ip-address 172.26.0.203 station3.example.com &>>"${LOG}"
@@ -701,7 +702,6 @@ ipa host-add --ip-address 172.26.0.208 station8.example.com &>>"${LOG}"
 ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.208 &>>"${LOG}"
 ipa host-add --ip-address 172.26.0.209 station9.example.com &>>"${LOG}"
 ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.209 &>>"${LOG}"
-ipa dnsrecord-add example.com ipaclient -ttl=3600 --a-ip-address 172.25.0.201 &>>"${LOG}"
 
 echo "Finished the new LDAP stuff" &>>"${LOG}"
 }
