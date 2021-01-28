@@ -6,7 +6,7 @@ LOG="${PITD}/postinstall.log"
 echo " " 
 echo "Please ensure that your CentOS Installation ISO is attached to your VM!"
 echo " " 
-echo "Creating copy of your ISO, please be patient as this will take a few mintues!"
+echo "Creating copy of your ISO, please be patient as this will take a few minutes!"
 cp /dev/sr0 /root/centos.iso
 echo " " 
 echo "Installation Media ISO created successfully!"
