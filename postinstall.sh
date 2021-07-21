@@ -1,6 +1,6 @@
 #!/bin/bash
 BL1="Linux In A Box lab server, PostInstall configuration"
-BL2="2021-01-17 for CentOS 8.2 x64                       "
+BL2="2021-01-17 for Rocky Linux                       "
 BL3="                                                    "
 BL4="                                                    "
 KICKSTARTRELEASE="Linux server1 kickstart v3.0"
