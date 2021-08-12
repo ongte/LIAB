@@ -596,6 +596,15 @@ label ${PXEMENUNUM}
   append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img repo=http://server1.example.com/pub/${comp_name}/dvd/ noipv6 ks=http://server1.example.com/pub/station_ks.cfg inst.nosave=all
 
 EOF
+	let PXEMENUNUM++
+	cat >>/var/lib/tftpboot/pxelinux.cfg/default <<EOF
+label ${PXEMENUNUM}
+  menu label ^${PXEMENUNUM}) ${comp_name}_kickstart_nogui_install
+  kernel $comp_name/vmlinuz
+  append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img repo=http://server1.example.com/pub/${comp_name}/dvd/ noipv6 ks=http://server1.example.com/pub/station-nogui_ks.cfg inst.nosave=all
+
+
+EOF
 done
 
 cp -a /usr/share/syslinux/pxelinux.0 /usr/share/syslinux/menu.c32 /usr/share/syslinux/libutil.c32 /usr/share/syslinux/ldlinux.c32 /var/lib/tftpboot/ &>>"${LOG}"
