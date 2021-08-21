@@ -1148,7 +1148,7 @@ EOF
 cat >${FTPDIR}/materials/updates.repo <<EOF
 [updates]
 name=AppStream Updates
-baseurl=http://linuxsoft.cern.ch/centos-vault/8.3.2011/AppStream/x86_64/kickstart
+baseurl=https://vault.centos.org/8.3.2011/AppStream/x86_64/kickstart
 enabled=0
 gpgcheck=0
 EOF
