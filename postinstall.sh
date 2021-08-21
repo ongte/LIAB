@@ -1144,6 +1144,16 @@ gpgcheck=0
 EOF
 )
 
+(
+cat >${FTPDIR}/materials/updates.repo <<EOF
+[updates]
+name=AppStream Updates
+baseurl=http://linuxsoft.cern.ch/centos-vault/8.3.2011/AppStream/x86_64/kickstart
+enabled=0
+gpgcheck=0
+EOF
+)
+
 mkdir -m 700 -p /root/.ssh
 ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa &>>"${LOG}"
 cp /root/.ssh/id_rsa.pub "${FTPDIR}/materials/" &>>"${LOG}"
