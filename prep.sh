@@ -8,6 +8,13 @@ echo "Please ensure that your Rocky Linux Installation ISO is attached to your V
 echo " " 
 echo "Creating copy of your ISO, please be patient as this will take a few minutes!"
 cp /dev/sr0 /root/centos.iso
+#added a check to ensure the iso is really attached
+ret_code=$?
+if [[ $ret_code -ne 0 ]]; then
+  echo " "
+  echo "Failed to copy ISO! Please ensure that your Installation ISO is attached to your VM!"
+  exit $ret_code
+fi
 echo " " 
 echo "Installation Media ISO created successfully!"
 echo " " 
