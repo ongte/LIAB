@@ -1110,6 +1110,15 @@ echo "   Configuring Miscellaneous" | tee -a "${LOG}"
 
 mandb &>>"${LOG}"
 
+# Setting up a custom container module stream for podman 2.0
+mkdir -p ${FTPDIR}/updates &>>"${LOG}"
+(
+	cd ${FTPDIR}/updates
+	wget -i ${FTPDIR}/updates.list &>>"${LOG}"
+	createrepo_c . &>>"${LOG}"
+	modifyrepo_c --mdtype=modules ${FTPDIR}/modules.yml repodata/ &>>"${LOG}"
+)
+
 mkdir -p ${FTPDIR}/plusrepo &>>"${LOG}"
 mkdir -p ${FTPDIR}/materials &>>"${LOG}"
 
@@ -1146,10 +1155,10 @@ EOF
 
 (
 cat >${FTPDIR}/materials/updates.repo <<EOF
-[updates]
+[AppStream-updates]
 name=AppStream Updates
-baseurl=https://vault.centos.org/8.3.2011/AppStream/x86_64/kickstart
-enabled=0
+baseurl=http://server1.example.com/pub/updates
+enabled=1
 gpgcheck=0
 EOF
 )
