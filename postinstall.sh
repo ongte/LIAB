@@ -1110,6 +1110,15 @@ echo "   Configuring Miscellaneous" | tee -a "${LOG}"
 
 mandb &>>"${LOG}"
 
+# Setting up a custom container module stream for podman 2.0
+mkdir -p ${FTPDIR}/updates &>>"${LOG}"
+(
+	cd ${FTPDIR}/updates
+	wget -i ${FTPDIR}/updates.list &>>"${LOG}"
+	createrepo_c . &>>"${LOG}"
+	modifyrepo_c --mdtype=modules ${FTPDIR}/modules.yml repodata/ &>>"${LOG}"
+)
+
 mkdir -p ${FTPDIR}/plusrepo &>>"${LOG}"
 mkdir -p ${FTPDIR}/materials &>>"${LOG}"
 
@@ -1139,6 +1148,16 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
 [AppStream]
 name=AppStream
 baseurl=http://server1.example.com/pub/centos-8.2/dvd/AppStream
+enabled=1
+gpgcheck=0
+EOF
+)
+
+(
+cat >${FTPDIR}/materials/updates.repo <<EOF
+[AppStream-updates]
+name=AppStream Updates
+baseurl=http://server1.example.com/pub/updates
 enabled=1
 gpgcheck=0
 EOF
