@@ -107,6 +107,12 @@ NIC2NAME=`head -n 2 < ${PITD}/NICs | tail -n 1 | cut -d ":" -f 1`
 NIC2CON=`head -n 2 < ${PITD}/NICs | tail -n 1 | cut -d ":" -f 3`
 NIC2CONUUID=`head -n 2 < ${PITD}/NICs | tail -n 1 | cut -d ":" -f 4`
 
+# Configure NetworkManager use dhclient
+cat > /etc/NetworkManager/conf.d/dhclient.conf << EOF
+[main]
+dhcp=dhclient
+EOF
+systemctl restart NetworkManager
 
 if [ "${NIC1CON}" != "External" ]; then
   echo "nmcli device disconnect ${NIC1NAME}" &>>"${LOG}"
@@ -116,15 +122,16 @@ if [ "${NIC1CON}" != "External" ]; then
 	echo "nmcli connection delete uuid ${NIC1CONUUID}" &>>"${LOG}"
     nmcli connection delete uuid ${NIC1CONUUID} &>>"${LOG}"
   fi
+  
   # "DHCP" is implied when you don't specify an IP address.  In fact I see no way
   # to explicitly state DHCP as an option...?
   echo "nmcli connection delete id ${NIC1NAME}" &>>"${LOG}"
   nmcli connection delete id ${NIC1NAME} &>>"${LOG}"
   echo "nmcli connection add type ethernet con-name External ifname ${NIC1NAME}" &>>"${LOG}"
   nmcli connection add type ethernet con-name External ifname ${NIC1NAME} &>>"${LOG}"
-  echo "nmcli connection modify External connection.zone \"external\" ipv4.ignore-auto-dns \"true\" ipv4.dns \"127.0.0.1\" ipv4.dns-search \"example.com\"" &>>"${LOG}"
-#i modified the next line and replaced dns with 8.8.8.8 so that internet connectivity would work during setup, we might need to put this back at some point
-  nmcli connection modify External connection.zone "external" ipv4.ignore-auto-dns "true" ipv4.dns "8.8.8.8" ipv4.dns-search "example.com" &>>"${LOG}"
+  echo "nmcli connection modify External connection.zone \"external\" ipv4.dns-search \"example.com\"" &>>"${LOG}"
+  # I removed the the ipv4.ignore-auto-dns option so that it would pickup the the DHCP DNS servers
+  nmcli connection modify External connection.zone "external" ipv4.dns-search "example.com" &>>"${LOG}"
   # To ensure that our just-modified settings for DNS are used, briefly re-drop the connection
   echo "nmcli device disconnect ${NIC1NAME}" &>>"${LOG}"
   nmcli device disconnect ${NIC1NAME} &>>"${LOG}"
