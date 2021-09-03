@@ -1,9 +1,9 @@
 #!/bin/bash
 BL1="Linux In A Box lab server, PostInstall configuration"
-BL2="2021-01-17 for Rocky Linux                       "
+BL2="2021-09-04 for CentOS Linux 8.2                     "
 BL3="                                                    "
 BL4="                                                    "
-KICKSTARTRELEASE="Linux server1 kickstart v3.0"
+KICKSTARTRELEASE="Linux server1 kickstart v3.1"
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 
 echo ""
@@ -108,11 +108,13 @@ NIC2CON=`head -n 2 < ${PITD}/NICs | tail -n 1 | cut -d ":" -f 3`
 NIC2CONUUID=`head -n 2 < ${PITD}/NICs | tail -n 1 | cut -d ":" -f 4`
 
 # Configure NetworkManager use dhclient
+echo "Create /etc/NetworkManager/conf.d/dhclient.conf" &>>"${LOG}"
 cat > /etc/NetworkManager/conf.d/dhclient.conf << EOF
 [main]
 dhcp=dhclient
 EOF
-systemctl restart NetworkManager
+echo "systemctl restart NetworkManager" &>>"${LOG}"
+systemctl restart NetworkManager &>>"${LOG}"
 
 if [ "${NIC1CON}" != "External" ]; then
   echo "nmcli device disconnect ${NIC1NAME}" &>>"${LOG}"
@@ -130,7 +132,7 @@ if [ "${NIC1CON}" != "External" ]; then
   echo "nmcli connection add type ethernet con-name External ifname ${NIC1NAME}" &>>"${LOG}"
   nmcli connection add type ethernet con-name External ifname ${NIC1NAME} &>>"${LOG}"
   echo "nmcli connection modify External connection.zone \"external\" ipv4.dns-search \"example.com\"" &>>"${LOG}"
-  # I removed the the ipv4.ignore-auto-dns option so that it would pickup the the DHCP DNS servers
+  # I removed the ipv4.ignore-auto-dns option so that it would pickup the DNS servers from DHCP
   nmcli connection modify External connection.zone "external" ipv4.dns-search "example.com" &>>"${LOG}"
   # To ensure that our just-modified settings for DNS are used, briefly re-drop the connection
   echo "nmcli device disconnect ${NIC1NAME}" &>>"${LOG}"
@@ -202,7 +204,6 @@ echo " "
 echo " "
 ISO=CentOS8.2.iso
 # Removing the dd and doing this with a hardlink instead
-# dd if=/root/centos.iso of=${FTPDIR}/${ISO} &>>"${LOG}"
 ln /root/centos.iso ${FTPDIR}/${ISO} &>>"${LOG}"
 ISOMOUNTDIRREL="centos-8.2/dvd"
 ISOMOUNTDIR="${FTPDIR}/${ISOMOUNTDIRREL}"
