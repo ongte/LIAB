@@ -194,7 +194,9 @@ echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 echo " "
 echo " "
 ISO=CentOS8.2.iso
-dd if=/root/centos.iso of=${FTPDIR}/${ISO} &>>"${LOG}"
+# Removing the dd and doing this with a hardlink instead
+# dd if=/root/centos.iso of=${FTPDIR}/${ISO} &>>"${LOG}"
+ln /root/centos.iso ${FTPDIR}/${ISO} &>>"${LOG}"
 ISOMOUNTDIRREL="centos-8.2/dvd"
 ISOMOUNTDIR="${FTPDIR}/${ISOMOUNTDIRREL}"
 mkdir -p "${FTPDIR}/${ISOMOUNTDIRREL}"
