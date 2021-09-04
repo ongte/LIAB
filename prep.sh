@@ -4,7 +4,7 @@ PITD=`mktemp -d`
 LOG="${PITD}/postinstall.log"
 #lets create a copy of the iso to use in the environemt
 echo " " 
-echo "Please ensure that your Rocky Linux Installation ISO is attached to your VM!"
+echo "Please ensure that your CentOS Linux Installation ISO is attached to your VM!"
 echo " " 
 echo "Creating copy of your ISO, please be patient as this will take a few minutes!"
 cp /dev/sr0 /root/centos.iso
