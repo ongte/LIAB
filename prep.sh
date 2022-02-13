@@ -19,6 +19,9 @@ echo " "
 echo "Installation Media ISO created successfully!"
 echo " " 
 echo "Setting up PostInstall Script Environment"
+#these commands set centos to use vault.centos.org because centos mirrorlist has been removed
+sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 #this command will install git on the server
 yum install -y git &>>"${LOG}"
 #this command will give us a temporary working directory
