@@ -221,11 +221,12 @@ echo " "
 echo "Applying pre-install OS updates." | tee -a "${LOG}"
 echo " " 
   yum -y update >"${PITD}/yum_update.txt" &>> "${LOG}"
-echo " " 
-echo "Patching repositories to point to vault.centos.org" | tee -a "${LOG}"  
-echo " " 
+
+echo "Patching repositories to point to vault.centos.org" &>> "${LOG}"
+
 sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
 sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+
 echo " " 
 echo "Updates complete, moving on to Package Installation" | tee -a "${LOG}"  
 echo " " 
