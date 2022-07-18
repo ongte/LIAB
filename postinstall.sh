@@ -1,9 +1,9 @@
 #!/bin/bash
 BL1="Linux In A Box lab server, PostInstall configuration"
-BL2="2021-09-04 for CentOS Linux 8.2                     "
+BL2="2022-07-18 for Rocky Linux 9.0                      "
 BL3="                                                    "
 BL4="                                                    "
-KICKSTARTRELEASE="Linux server1 kickstart v3.1"
+KICKSTARTRELEASE="Linux server1 kickstart v3.2"
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 
 echo ""
@@ -55,11 +55,12 @@ SKIPOSCHECK=0
 NUMOFWS=11
 
 DETECTEDOS=99
-#the next 3 lines are not needed since we are working only with CentOS8
+#the next 4 lines are not needed since we are working with Rocky
 #grep -q "^CentOS Linux release 7.0.1406 (Core)" /etc/redhat-release && DETECTEDOS=10
 #grep -q "^CentOS Linux release 7.1.1503 (Core)" /etc/redhat-release && DETECTEDOS=11
 #grep -q "^CentOS Linux release 7.2.1511 (Core)" /etc/redhat-release && DETECTEDOS=12
-grep -q "^CentOS Linux release 8.2.2004 (Core)" /etc/redhat-release && DETECTEDOS=13
+#grep -q "^CentOS Linux release 8.2.2004 (Core)" /etc/redhat-release && DETECTEDOS=13
+grep -q "^Rocky Linux release 9.0" /etc/redhat-release && DETECTEDOS=20
 
 popd &>/dev/null
 
@@ -202,10 +203,10 @@ echo " "
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 echo " "
 echo " "
-ISO=CentOS8.2.iso
+ISO=Rocky-90.iso
 # Removing the dd and doing this with a hardlink instead
-ln /root/centos.iso ${FTPDIR}/${ISO} &>>"${LOG}"
-ISOMOUNTDIRREL="centos-8.2/dvd"
+ln /root/rocky.iso ${FTPDIR}/${ISO} &>>"${LOG}"
+ISOMOUNTDIRREL="rocky-9.0/dvd"
 ISOMOUNTDIR="${FTPDIR}/${ISOMOUNTDIRREL}"
 mkdir -p "${FTPDIR}/${ISOMOUNTDIRREL}"
 sed --in-place "/${ISO}/d" /etc/fstab &>/dev/null
@@ -221,11 +222,6 @@ echo " "
 echo "Applying pre-install OS updates." | tee -a "${LOG}"
 echo " " 
   yum -y update >"${PITD}/yum_update.txt" &>> "${LOG}"
-
-echo "Patching repositories to point to vault.centos.org" &>> "${LOG}"
-
-sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
-sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 
 echo " " 
 echo "Updates complete, moving on to Package Installation" | tee -a "${LOG}"  
@@ -657,7 +653,7 @@ if [ ${DETECTEDOS} -lt 10 ]; then
 elif [ ${DETECTEDOS} -lt 20 ]; then
   NTPPOOL="centos."
 else
-  NTPPOOL=""
+  NTPPOOL="rocky."
 fi
 cat >>/etc/chrony.conf <<EOF
 server pool.ntp.org iburst
@@ -1156,14 +1152,14 @@ rm "${ELT}" -rf  &>>"${LOG}"
 cat >${FTPDIR}/materials/server1.repo <<EOF
 [server1]
 name=BaseOS
-baseurl=http://server1.example.com/pub/centos-8.2/dvd/BaseOS
+baseurl=http://server1.example.com/pub/rocky-9.0/dvd/BaseOS
 enabled=1
 gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
 
 [AppStream]
 name=AppStream
-baseurl=http://server1.example.com/pub/centos-8.2/dvd/AppStream
+baseurl=http://server1.example.com/pub/rocky-9.0/dvd/AppStream
 enabled=1
 gpgcheck=0
 EOF
