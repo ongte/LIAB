@@ -1137,7 +1137,6 @@ ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa &>>"${LOG}"
 cp /root/.ssh/id_rsa.pub "${FTPDIR}/materials/" &>>"${LOG}"
 echo "UseDNS no" >>/etc/ssh/sshd_config
 sed -e 's/#GSSAPIAuthentication no/GSSAPIAuthentication no/' -e 's/GSSAPIAuthentication yes/#GSSAPIAuthentication yes/' -i /etc/ssh/sshd_config
-sed -e 's/IPTABLES_MODULES="/&ip_conntrack_ftp /' -i.bak /etc/sysconfig/iptables-config
 
 cat >"/var/www/html/motivational.html"<<EOF
 <h1>You can Do It!</h1>
@@ -1211,7 +1210,10 @@ firewall-cmd --permanent --zone=internal --add-port=662/udp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-port=5000/tcp &>>"${LOG}"
 systemctl restart firewalld.service &>>"${LOG}"
 sleep 10
-iptables -nvL &>>"${PITD}/iptables_nvL"
+#iptables replaced by nftables
+#iptables -nvL &>>"${PITD}/iptables_nvL"
+nft list table inet firewalld &>>"${PITD}/nft_list_table_inet_firewalld"
+
 firewall-cmd --list-all-zones &>>"${PITD}/firewall-cmd_list-all-zones"
 echo "Firewall rules done" &>>"${LOG}"
 }
