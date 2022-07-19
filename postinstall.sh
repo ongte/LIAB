@@ -235,7 +235,7 @@ echo " "
   yum -y install "@Network Servers" "@System Tools" "@Server" dmidecode oddjob sgpio \
     certmonger krb5-server krb5-server-ldap sssd-krb5-common krb5-workstation \
     perl-DBD-SQLite httpd vsftpd nfs-utils nfs4-acl-tools dhcp-server dhcp-common tftp tftp-server \
-    bind-chroot bind-utils createrepo openldap openldap-devel openldap-clients \
+    bind-chroot bind-utils createrepo openldap openldap-devel openldap-clients container-tools\
     selinux-policy-targeted python3-policycoreutils syslinux iscsi-initiator-utils ftp lftp samba-client samba* unzip zip lsof \
     mlocate targetcli tcpdump pykickstart chrony net-tools patch rng-tools open-vm-tools rsync \
     policycoreutils-devel sos vim bash-completion sl &>"${PITD}/yum_install.txt"
@@ -573,7 +573,7 @@ for full_path in `find ${FTPDIR} -name pxeboot -type d` ; do
 label ${PXEMENUNUM}
   menu label ^${PXEMENUNUM}) ${comp_name}_manual_install
   kernel $comp_name/vmlinuz
-  append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img repo=http://server1.example.com/pub/${comp_name}/dvd/
+  append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img inst.repo=http://server1.example.com/pub/${comp_name}/dvd/
 
 EOF
 	let PXEMENUNUM++
@@ -581,7 +581,7 @@ EOF
 label ${PXEMENUNUM}
   menu label ^${PXEMENUNUM}) ${comp_name}_kickstart_install
   kernel $comp_name/vmlinuz
-  append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img repo=http://server1.example.com/pub/${comp_name}/dvd/ noipv6 ks=http://server1.example.com/pub/station_ks.cfg inst.nosave=all
+  append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img inst.repo=http://server1.example.com/pub/${comp_name}/dvd/ noipv6 inst.ks=http://server1.example.com/pub/station_ks.cfg inst.nosave=all
 
 EOF
 	let PXEMENUNUM++
@@ -589,7 +589,7 @@ EOF
 label ${PXEMENUNUM}
   menu label ^${PXEMENUNUM}) ${comp_name}_kickstart_nogui_install
   kernel $comp_name/vmlinuz
-  append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img repo=http://server1.example.com/pub/${comp_name}/dvd/ noipv6 ks=http://server1.example.com/pub/station-nogui_ks.cfg inst.nosave=all
+  append initrd=${comp_name}/initrd.img root=live:http://server1.example.com/pub/${comp_name}/dvd/images/install.img inst.repo=http://server1.example.com/pub/${comp_name}/dvd/ noipv6 inst.ks=http://server1.example.com/pub/station-nogui_ks.cfg inst.nosave=all
 
 
 EOF
@@ -648,7 +648,7 @@ ldap_config() {
 echo "   Configuring LDAP Service" | tee -a "${LOG}"
 echo "Starting the new LDAP stuff" &>>"${LOG}"
 
-dnf module install -y idm:DL1/{server,client} &>>"${LOG}"
+dnf install -y ipa-{server,client} &>>"${LOG}"
 ipa-server-install -U -p P@ssw0rd! -a P@ssw0rd! -n EXAMPLE.COM -r EXAMPLE.COM &>>"${LOG}"
 firewall-cmd --permanent --add-service={ldap,ldaps,kerberos,ntp,http,https} --zone=internal &>>"${LOG}"
 firewall-cmd --reload &>>"${LOG}"
@@ -1098,15 +1098,6 @@ echo "   Configuring Miscellaneous" | tee -a "${LOG}"
 
 mandb &>>"${LOG}"
 
-# Setting up a custom container module stream for podman 2.0
-mkdir -p ${FTPDIR}/updates &>>"${LOG}"
-(
-	cd ${FTPDIR}/updates
-	wget -i ${FTPDIR}/updates.list &>>"${LOG}"
-	createrepo_c . &>>"${LOG}"
-	modifyrepo_c --mdtype=modules ${FTPDIR}/modules.yml repodata/ &>>"${LOG}"
-)
-
 mkdir -p ${FTPDIR}/plusrepo &>>"${LOG}"
 mkdir -p ${FTPDIR}/materials &>>"${LOG}"
 
@@ -1136,16 +1127,6 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
 [AppStream]
 name=AppStream
 baseurl=http://server1.example.com/pub/rocky-9.0/dvd/AppStream
-enabled=1
-gpgcheck=0
-EOF
-)
-
-(
-cat >${FTPDIR}/materials/updates.repo <<EOF
-[AppStream-updates]
-name=AppStream Updates
-baseurl=http://server1.example.com/pub/updates
 enabled=1
 gpgcheck=0
 EOF
