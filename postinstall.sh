@@ -232,13 +232,13 @@ echo " "
 echo "Package installation in progress..." | tee -a "${LOG}"
 echo " " 
 echo " " 
-  yum -y install "@Network Servers" "@System Tools" "@Server" spax dmidecode oddjob sgpio \
+  yum -y install "@Network Servers" "@System Tools" "@Server" dmidecode oddjob sgpio \
     certmonger krb5-server krb5-server-ldap sssd-krb5-common krb5-workstation \
     perl-DBD-SQLite httpd vsftpd nfs-utils nfs4-acl-tools dhcp-server dhcp-common tftp tftp-server \
-    bind-chroot bind-utils createrepo openldap openldap-devel openldap-clients ypserv \
+    bind-chroot bind-utils createrepo openldap openldap-devel openldap-clients \
     selinux-policy-targeted python3-policycoreutils syslinux iscsi-initiator-utils ftp lftp samba-client samba* unzip zip lsof \
     mlocate targetcli tcpdump pykickstart chrony net-tools patch rng-tools open-vm-tools rsync \
-    policycoreutils-devel sos xinetd vim bash-completion sl &>"${PITD}/yum_install.txt"
+    policycoreutils-devel sos vim bash-completion sl &>"${PITD}/yum_install.txt"
   echo >>"${PITD}/yum_install.txt"
   echo "Package Installation Complete." | tee -a "${LOG}"
 echo ""
@@ -532,34 +532,10 @@ systemctl start named.service &>>"${LOG}"
 
 tftp_config(){
 echo "   Configuring TFTP Service" | tee -a "${LOG}"
-touch /etc/xinetd.d/tftp
-cat >/etc/xinetd.d/tftp <<EOF
-# default: off
-# description: The tftp server serves files using the trivial file transfer \
-#	protocol.  The tftp protocol is often used to boot diskless \
-#	workstations, download configuration files to network-aware printers, \
-#	and to start the installation process for some operating systems.
-service tftp
-{
-	socket_type		= dgram
-	protocol		= udp
-	wait			= yes
-	user			= root
-	server			= /usr/sbin/in.tftpd
-	server_args		= -v -s /var/lib/tftpboot
-	disable			= no
-	per_source		= 11
-	cps			= 100 2
-	flags			= IPv4
+echo "Checking tftp.socket and starting if needed"  &>>"${LOG}"
+( systemctl is-active tftp.socket || systemctl enable --now tftp.socket ) &>>"${LOG}"
 }
-EOF
-sed -r -i.bak -e 's/(disable\s*=\s*)(yes)/\1no/'  -e 's/(server_args\s*)(=\s*-s)/\1= -v -s/' /etc/xinetd.d/tftp
-echo "Reloading xinetd.service"  &>>"${LOG}"
-systemctl reload xinetd.service  &>>"${LOG}"
-sleep 2
-echo "Checking xinetd.service and starting if still needed"  &>>"${LOG}"
-( systemctl is-active xinetd.service || systemctl start xinetd.service ) &>>"${LOG}"
-}
+
 ###############################################################################################################
 pxe_config() {
 
