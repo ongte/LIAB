@@ -1255,9 +1255,12 @@ podman push server1:5000/mariadb &>>"${LOG}"
 #fix selinux issues
 podman stop registry &>>"${LOG}"
 systemctl start container-registry.service &>>"${LOG}"
+sleep 5
 setenforce 0 &>>"${LOG}"
 systemctl restart container-registry.service &>>"${LOG}"
+sleep 5
 systemctl stop container-registry.service &>>"${LOG}"
+sleep 5
 setsebool -P domain_can_mmap_files 1 &>>"${LOG}"
 semanage fcontext -a -t container_file_t "/etc/containers/networks(/.*)?" &>>"${LOG}"
 restorecon -Rv /etc/containers/networks &>>"${LOG}"
@@ -1268,6 +1271,7 @@ semodule -X 300 -i my-conmon.pp &>>"${LOG}"
 ausearch -c 'registry' --raw | audit2allow -M my-registry &>>"${LOG}"
 semodule -X 300 -i my-registry.pp &>>"${LOG}"
 setenforce 1 &>>"${LOG}"
+systemctl start container-registry.service &>>"${LOG}"
 echo "container config complete" &>>"${LOG}"
 }
 ###################################################################################################
