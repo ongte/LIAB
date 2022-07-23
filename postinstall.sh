@@ -55,9 +55,7 @@ SKIPOSCHECK=0
 NUMOFWS=11
 
 DETECTEDOS=99
-#the next 4 lines are not needed since we are working with Rocky
-#grep -q "^CentOS Linux release 7.0.1406 (Core)" /etc/redhat-release && DETECTEDOS=10
-#grep -q "^CentOS Linux release 7.1.1503 (Core)" /etc/redhat-release && DETECTEDOS=11
+#the next 2 lines are not needed since we are working with Rocky
 #grep -q "^CentOS Linux release 7.2.1511 (Core)" /etc/redhat-release && DETECTEDOS=12
 #grep -q "^CentOS Linux release 8.2.2004 (Core)" /etc/redhat-release && DETECTEDOS=13
 grep -q "^Rocky Linux release 9.0" /etc/redhat-release && DETECTEDOS=20
@@ -233,12 +231,13 @@ echo "Package installation in progress..." | tee -a "${LOG}"
 echo " " 
 echo " " 
   yum -y install "@Network Servers" "@System Tools" "@Server" dmidecode oddjob sgpio \
-    certmonger krb5-server krb5-server-ldap sssd-krb5-common krb5-workstation \
-    perl-DBD-SQLite httpd vsftpd nfs-utils nfs4-acl-tools dhcp-server dhcp-common tftp tftp-server \
-    bind-chroot bind-utils createrepo openldap openldap-devel openldap-clients container-tools\
-    selinux-policy-targeted python3-policycoreutils syslinux iscsi-initiator-utils ftp lftp samba-client samba* unzip zip lsof \
-    mlocate targetcli tcpdump pykickstart chrony net-tools patch rng-tools open-vm-tools rsync \
+    perl-DBD-SQLite httpd vsftpd nfs-utils nfs4-acl-tools dhcp-server dhcp-common \
+    bind-chroot bind-utils createrepo container-tools tftp tftp-server \
+    selinux-policy-targeted python3-policycoreutils syslinux ftp lftp unzip zip lsof \
+    mlocate tcpdump pykickstart chrony net-tools patch rng-tools open-vm-tools rsync \
     policycoreutils-devel sos vim bash-completion sl &>"${PITD}/yum_install.txt"
+# Removed packages: certmonger krb5-server krb5-server-ldap sssd-krb5-common krb5-workstation
+#  samba-client samba* openldap openldap-devel openldap-clients iscsi-initiator-utils targetcli
   echo >>"${PITD}/yum_install.txt"
   echo "Package Installation Complete." | tee -a "${LOG}"
 echo ""
@@ -1189,10 +1188,10 @@ firewall-cmd --permanent --zone=internal --add-service=ftp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-service=tftp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-service=http &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-service=https &>>"${LOG}"
-firewall-cmd --permanent --zone=internal --add-service=ldap &>>"${LOG}"
-firewall-cmd --permanent --zone=internal --add-service=ldaps &>>"${LOG}"
-firewall-cmd --permanent --zone=internal --add-service=kerberos &>>"${LOG}"
-firewall-cmd --permanent --zone=internal --add-service=samba &>>"${LOG}"
+#firewall-cmd --permanent --zone=internal --add-service=ldap &>>"${LOG}"
+#firewall-cmd --permanent --zone=internal --add-service=ldaps &>>"${LOG}"
+#firewall-cmd --permanent --zone=internal --add-service=kerberos &>>"${LOG}"
+#firewall-cmd --permanent --zone=internal --add-service=samba &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-service=ntp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-port=3260/tcp &>>"${LOG}"
 firewall-cmd --permanent --zone=internal --add-port=2049/tcp &>>"${LOG}"
@@ -1219,7 +1218,7 @@ echo "Firewall rules done" &>>"${LOG}"
 }
 
 ###################################################################################################
-containers (){
+containers_config (){
 #assistance with commands here from Josh Davis jdavis@eoctech.edu
 echo "   Configuring Containers" | tee -a "${LOG}"
 #here we make our container registry directory
@@ -1237,10 +1236,10 @@ registries = []
 EOF
 #here we create our local registry and activate it
 podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry:z --restart=always registry:2 &>>"${LOG}"
-podman generate systemd registry > /etc/systemd/system/registry-container.service 
-chmod 755 /etc/systemd/system/registry-container.service &>>"${LOG}"
+podman generate systemd --name registry > /etc/systemd/system/container-registry.service 
+#chmod 755 /etc/systemd/system/registry-container.service &>>"${LOG}"
 systemctl daemon-reload &>>"${LOG}"
-systemctl enable --now registry-container.service &>>"${LOG}"
+systemctl enable container-registry.service &>>"${LOG}"
 #now we pull some public containers to use locally
 podman pull docker.io/library/httpd &>>"${LOG}"
 podman pull docker.io/library/mariadb &>>"${LOG}"
@@ -1249,6 +1248,18 @@ podman tag docker.io/library/httpd server1:5000/httpd &>>"${LOG}"
 podman tag docker.io/library/mariadb server1:5000/mariadb &>>"${LOG}"
 podman push server1:5000/httpd &>>"${LOG}"
 podman push server1:5000/mariadb &>>"${LOG}"
+#fix selinux issues
+podman stop registry &>>"${LOG}"
+setenforce 0 &>>"${LOG}"
+systemctl start registry-container.service &>>"${LOG}"
+ausearch -c 'podman' --raw | audit2allow -M my-podman &>>"${LOG}"
+semodule -X 300 -i my-podman.pp &>>"${LOG}"
+ausearch -c 'conmon' --raw | audit2allow -M my-conmon &>>"${LOG}"
+semodule -X 300 -i my-conmon.pp &>>"${LOG}"
+systemctl start registry-container.service &>>"${LOG}"
+ausearch -c 'registry' --raw | audit2allow -M my-registry &>>"${LOG}"
+semodule -X 300 -i my-registry.pp &>>"${LOG}"
+setenforce 1 &>>"${LOG}"
 echo "container config complete" &>>"${LOG}"
 }
 ###################################################################################################
@@ -1452,13 +1463,13 @@ tftp_config
 pxe_config
 ntp_config
 nfs_config
-samba_config
-iscsi_config
+#samba_config
+#iscsi_config
 user_config
 misc2_config
-ldap_config
-kerberos_config
+#ldap_config
+#kerberos_config
 firewall_config
-containers  
+containers_config
 materials_config
 reboot
