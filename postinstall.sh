@@ -995,7 +995,7 @@ systemctl start target.service &>>"${LOG}"
 
 user_config(){
 echo "   Configuring Lab Users" | tee -a "${LOG}"
-groupadd smbuser &>>"${LOG}"
+#groupadd smbuser &>>"${LOG}"
 
 mkdir /home/server1 &>>"${LOG}"
 for i in `seq -w 1 ${NUMOFWS}`; do
@@ -1005,6 +1005,27 @@ for i in `seq -w 1 ${NUMOFWS}`; do
   echo "P@ssw0rd" | passwd --stdin guest$i  &>>"${LOG}"
 done
 
+
+echo "   Configuring Student Users" | tee -a "${LOG}"
+for N in 1 2 3 4 5; do
+  useradd user${N} &>>"${LOG}"
+#  useradd -m -G smbuser user${N} &>>"${LOG}"
+  echo "P@ssw0rd" | passwd --stdin user${N} &>>"${LOG}"
+#  echo -e "P@ssw0rd\nP@ssw0rd" | smbpasswd -a user${N} &>>"${LOG}"
+done
+  useradd student &>>"${LOG}"
+  echo "P@ssw0rd" | passwd --stdin student &>>"${LOG}"
+#  echo -e "P@ssw0rd\nP@ssw0rd" | smbpasswd -a student &>>"${LOG}"
+  for i in {student,user1,user2,user3,user4,user5}; do mkdir /home/$i/files; done
+  for i in {student,user1,user2,user3,user4,user5}; do touch /home/$i/files/file{1..10}.txt; done
+  echo "big brother is watching" | tee /home/*/files/file{1..10}.txt &>>"${LOG}"
+  chmod -R 0660 /home/*/files
+  for i in {student,user1,user2,user3,user4,user5}; do chown -R $i: /home/$i/files;done
+}
+
+##########################################################################################################
+
+cert_config(){
 echo "   Configuring Certificates" | tee -a "${LOG}"
 mkdir -p /etc/pki/CA/private
 (umask 077;openssl genrsa -passout pass:cacertpass -out /etc/pki/CA/private/cakey.pem -des3 2048)  &>>"${LOG}"
@@ -1072,22 +1093,6 @@ Linux In A Box lab
 server1.example.com
 root@server1.example.com
 EOF
-
-
-echo "   Configuring Student Users" | tee -a "${LOG}"
-for N in 1 2 3 4 5; do
-  useradd -m -G smbuser user${N} &>>"${LOG}"
-  echo "P@ssw0rd" | passwd --stdin user${N} &>>"${LOG}"
-  echo -e "P@ssw0rd\nP@ssw0rd" | smbpasswd -a user${N} &>>"${LOG}"
-done
-  useradd student &>>"${LOG}"
-  echo "P@ssw0rd" | passwd --stdin student &>>"${LOG}"
-  echo -e "P@ssw0rd\nP@ssw0rd" | smbpasswd -a student &>>"${LOG}"
-  for i in {student,user1,user2,user3,user4,user5}; do mkdir /home/$i/files; done
-  for i in {student,user1,user2,user3,user4,user5}; do touch /home/$i/files/file{1..10}.txt; done
-  echo "big brother is watching" | tee /home/*/files/file{1..10}.txt &>>"${LOG}"
-  chmod -R 0660 /home/*/files
-  for i in {student,user1,user2,user3,user4,user5}; do chown -R $i: /home/$i/files;done
 }
 
 ################################################################################################################
@@ -1097,7 +1102,7 @@ echo "   Configuring Miscellaneous" | tee -a "${LOG}"
 
 mandb &>>"${LOG}"
 
-mkdir -p ${FTPDIR}/plusrepo &>>"${LOG}"
+#mkdir -p ${FTPDIR}/plusrepo &>>"${LOG}"
 mkdir -p ${FTPDIR}/materials &>>"${LOG}"
 
 (
@@ -1237,7 +1242,6 @@ EOF
 #here we create our local registry and activate it
 podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry:z --restart=always registry:2 &>>"${LOG}"
 podman generate systemd --name registry > /etc/systemd/system/container-registry.service 
-#chmod 755 /etc/systemd/system/registry-container.service &>>"${LOG}"
 systemctl daemon-reload &>>"${LOG}"
 systemctl enable container-registry.service &>>"${LOG}"
 #now we pull some public containers to use locally
@@ -1250,13 +1254,17 @@ podman push server1:5000/httpd &>>"${LOG}"
 podman push server1:5000/mariadb &>>"${LOG}"
 #fix selinux issues
 podman stop registry &>>"${LOG}"
+systemctl start container-registry.service &>>"${LOG}"
 setenforce 0 &>>"${LOG}"
-systemctl start registry-container.service &>>"${LOG}"
+systemctl restart container-registry.service &>>"${LOG}"
+systemctl stop container-registry.service &>>"${LOG}"
+setsebool -P domain_can_mmap_files 1 &>>"${LOG}"
+semanage fcontext -a -t container_file_t "/etc/containers/networks(/.*)?" &>>"${LOG}"
+restorecon -Rv /etc/containers/networks &>>"${LOG}"
 ausearch -c 'podman' --raw | audit2allow -M my-podman &>>"${LOG}"
 semodule -X 300 -i my-podman.pp &>>"${LOG}"
 ausearch -c 'conmon' --raw | audit2allow -M my-conmon &>>"${LOG}"
 semodule -X 300 -i my-conmon.pp &>>"${LOG}"
-systemctl start registry-container.service &>>"${LOG}"
 ausearch -c 'registry' --raw | audit2allow -M my-registry &>>"${LOG}"
 semodule -X 300 -i my-registry.pp &>>"${LOG}"
 setenforce 1 &>>"${LOG}"
@@ -1466,6 +1474,7 @@ nfs_config
 #samba_config
 #iscsi_config
 user_config
+#cert_config
 misc2_config
 #ldap_config
 #kerberos_config

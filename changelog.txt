@@ -177,3 +177,10 @@ server-side config fixed to require manual installs for elinks & lftp.
 	The biggest update here is that the installation has been completely automated
 	and the need for the 2nd ISO file has been eliminated as we are
 	storing and pulling all files from github. 
+2022-07-18	
+  Server v4.0	
+  	It has been a while since we worked on this, but everything has been
+	updated to Rocky Linux 9.0. Many things have been removed: I
+	LDAP/IPA, Kerberos, Samba, iSCSI
+	All these are no longer in any exam objectives and have been removed.
+	In their place, we've added Podman and Ansible.
