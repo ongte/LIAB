@@ -1243,7 +1243,7 @@ EOF
 podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry:z --restart=always registry:2 &>>"${LOG}"
 podman generate systemd --name registry > /etc/systemd/system/container-registry.service 
 systemctl daemon-reload &>>"${LOG}"
-systemctl enable container-registry.service &>>"${LOG}"
+#systemctl enable container-registry.service &>>"${LOG}"
 #now we pull some public containers to use locally
 podman pull docker.io/library/httpd &>>"${LOG}"
 podman pull docker.io/library/mariadb &>>"${LOG}"
@@ -1252,26 +1252,25 @@ podman tag docker.io/library/httpd server1:5000/httpd &>>"${LOG}"
 podman tag docker.io/library/mariadb server1:5000/mariadb &>>"${LOG}"
 podman push server1:5000/httpd &>>"${LOG}"
 podman push server1:5000/mariadb &>>"${LOG}"
-#fix selinux issues
+#Workaround SELinux issues
 podman stop registry &>>"${LOG}"
-systemctl start container-registry.service &>>"${LOG}"
+cp /usr/lib/systemd/system/rc-local.service /etc/systemd/system &>>"${LOG}"
+echo "" >> /etc/systemd/system/rc-local.service &>>"${LOG}"
+echo "[Install]" >> /etc/systemd/system/rc-local.service &>>"${LOG}"
+echo "WantedBy=multi-user.target" >> /etc/systemd/system/rc-local.service &>>"${LOG}"
+systemctl daemon-reload &>>"${LOG}"
+cat >"/etc/rc.d/rc.local"<<EOF
+#!/bin/bash
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+touch /var/lock/subsys/local
 sleep 5
-setenforce 0 &>>"${LOG}"
-systemctl restart container-registry.service &>>"${LOG}"
-sleep 5
-systemctl stop container-registry.service &>>"${LOG}"
-sleep 5
-setsebool -P domain_can_mmap_files 1 &>>"${LOG}"
-semanage fcontext -a -t container_file_t "/etc/containers/networks(/.*)?" &>>"${LOG}"
-restorecon -Rv /etc/containers/networks &>>"${LOG}"
-ausearch -c 'podman' --raw | audit2allow -M my-podman &>>"${LOG}"
-semodule -X 300 -i my-podman.pp &>>"${LOG}"
-ausearch -c 'conmon' --raw | audit2allow -M my-conmon &>>"${LOG}"
-semodule -X 300 -i my-conmon.pp &>>"${LOG}"
-ausearch -c 'registry' --raw | audit2allow -M my-registry &>>"${LOG}"
-semodule -X 300 -i my-registry.pp &>>"${LOG}"
-setenforce 1 &>>"${LOG}"
-systemctl start container-registry.service &>>"${LOG}"
+setenforce 0
+systemctl start container-registry
+setenforce 1
+EOF
+chmod +x /etc/rc.d/rc.local &>>"${LOG}"
+systemctl enable rc-local.service &>>"${LOG}"
 echo "container config complete" &>>"${LOG}"
 }
 ###################################################################################################
