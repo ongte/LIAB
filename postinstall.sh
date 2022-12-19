@@ -80,7 +80,7 @@ cp -f ${MPOINT}/scrape_dhcp_settings.sh /usr/local/sbin/scrape_dhcp_settings.sh
 cp -f ${MPOINT}/registry.sh /root/.registry.sh
 chmod 555 /usr/local/sbin/breakme
 chmod 555 /usr/local/sbin/scrape_dhcp_settings.sh
-chmod 555 /root/.registry.sh
+chmod 755 /root/.registry.sh
 
 ###############################################################################################
 
