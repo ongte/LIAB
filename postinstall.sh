@@ -77,13 +77,10 @@ echo "${KICKSTARTRELEASE}" > /etc/kickstart-release
 cp -af ${MPOINT}/ftppub/* ${FTPDIR}/
 cp -f ${MPOINT}/breakme /usr/local/sbin/
 cp -f ${MPOINT}/scrape_dhcp_settings.sh /usr/local/sbin/scrape_dhcp_settings.sh
-mkdir /root/bin
-cp -f ${MPOINT}/registry1.sh /root/bin/registry1.sh
-cp -f ${MPOINT}/registry2.sh /root/bin/registry2.sh
+cp -f ${MPOINT}/registry.sh /root/.registry.sh
 chmod 555 /usr/local/sbin/breakme
 chmod 555 /usr/local/sbin/scrape_dhcp_settings.sh
-chmod 755 /root/bin/registry1.sh
-chmod 755 /root/bin/registry2.sh
+chmod 755 /root/.registry.sh
 
 ###############################################################################################
 
@@ -1246,7 +1243,7 @@ EOF
 
 #registry needs to be started on 1st login to root after installation
 touch /root/.config_registry
-echo "if [ -f ~/.config_registry ]; then echo; echo; echo Please run the scripts \'registry1.sh\' followed by \'registry2.sh\' now to configure the container registry.; echo; rm -f ~/.config_registry; fi" >> /root/.bashrc
+echo "if [ -f ~/.config_registry ]; then ./.registry.sh; rm -f ~/.config_registry; fi" >> /root/.bashrc
 
 echo "container config complete" &>>"${LOG}"
 }
