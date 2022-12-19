@@ -1226,8 +1226,8 @@ echo "Firewall rules done" &>>"${LOG}"
 containers_config (){
 #assistance with commands here from Josh Davis jdavis@eoctech.edu
 echo "   Configuring Containers" | tee -a "${LOG}"
-#here we make our container registry directory
-mkdir -pv /var/lib/registry &>>"${LOG}"
+#give passwordless sudo to student temporarily
+echo "student ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/student
 #now we setup the container registry file
 cat >"/etc/containers/registries.conf"<<EOF 
 [registries.search]
@@ -1239,38 +1239,34 @@ registries = ['server1:5000']
 [registries.block]
 registries = []
 EOF
-#here we create our local registry and activate it
-podman run -d --privileged --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry:z --restart=always registry:2 &>>"${LOG}"
-podman generate systemd --name registry > /etc/systemd/system/container-registry.service 
-systemctl daemon-reload &>>"${LOG}"
-#systemctl enable container-registry.service &>>"${LOG}"
-#now we pull some public containers to use locally
-podman pull docker.io/library/httpd &>>"${LOG}"
-podman pull docker.io/library/mariadb &>>"${LOG}"
-#here we tag the public containers and add them to the local registry to be used
-podman tag docker.io/library/httpd server1:5000/httpd &>>"${LOG}"
-podman tag docker.io/library/mariadb server1:5000/mariadb &>>"${LOG}"
-podman push server1:5000/httpd &>>"${LOG}"
-podman push server1:5000/mariadb &>>"${LOG}"
-#Workaround SELinux issues
-podman stop registry &>>"${LOG}"
-cp /usr/lib/systemd/system/rc-local.service /etc/systemd/system &>>"${LOG}"
-echo "" >> /etc/systemd/system/rc-local.service &>>"${LOG}"
-echo "[Install]" >> /etc/systemd/system/rc-local.service &>>"${LOG}"
-echo "WantedBy=multi-user.target" >> /etc/systemd/system/rc-local.service &>>"${LOG}"
-systemctl daemon-reload &>>"${LOG}"
-cat >"/etc/rc.d/rc.local"<<EOF
-#!/bin/bash
-# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
-# that this script will be executed during boot.
-touch /var/lock/subsys/local
-sleep 5
-setenforce 0
-systemctl start container-registry
-setenforce 1
+#here we login once to activate student user
+su - student << 'EOF'
+export XDG_RUNTIME_DIR=/run/user/$(id -u student)
+export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u student)/bus
 EOF
-chmod +x /etc/rc.d/rc.local &>>"${LOG}"
-systemctl enable rc-local.service &>>"${LOG}"
+#here we create our local registry and activate it
+su - student << 'EOF'
+export XDG_RUNTIME_DIR=/run/user/$(id -u student)
+export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u student)/bus
+mkdir -pv ~/registry &>> /dev/null
+podman run -d --name registry -p 5000:5000 -v ~/registry:/var/lib/registry:Z registry:2 &>> /dev/null
+mkdir -pv ~/.config/systemd/user &>> /dev/null
+cd ~/.config/systemd/user
+podman generate systemd -n registry -f &>> /dev/null
+systemctl --user daemon-reload &>> /dev/null
+podman pull docker.io/library/httpd &>> /dev/null
+podman pull docker.io/library/mariadb &>> /dev/null
+podman tag docker.io/library/httpd server1:5000/httpd &>> /dev/null
+podman tag docker.io/library/mariadb server1:5000/mariadb &>> /dev/null
+podman push server1:5000/httpd &>> /dev/null
+podman push server1:5000/mariadb &>> /dev/null
+podman stop registry &>> /dev/null
+systemctl --user enable --now container-registry.service &>> /dev/null
+sudo loginctl enable-linger student &>> /dev/null
+EOF
+#here we undo the passwordless sudo for student
+rm /etc/sudoers.d/student
+
 echo "container config complete" &>>"${LOG}"
 }
 ###################################################################################################
