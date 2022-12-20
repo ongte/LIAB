@@ -77,10 +77,8 @@ echo "${KICKSTARTRELEASE}" > /etc/kickstart-release
 cp -af ${MPOINT}/ftppub/* ${FTPDIR}/
 cp -f ${MPOINT}/breakme /usr/local/sbin/
 cp -f ${MPOINT}/scrape_dhcp_settings.sh /usr/local/sbin/scrape_dhcp_settings.sh
-cp -f ${MPOINT}/registry.sh /root/.registry.sh
 chmod 555 /usr/local/sbin/breakme
 chmod 555 /usr/local/sbin/scrape_dhcp_settings.sh
-chmod 755 /root/.registry.sh
 
 ###############################################################################################
 
@@ -1241,9 +1239,32 @@ registries = ['server1:5000']
 registries = []
 EOF
 
-#registry needs to be started on 1st login to root after installation
-touch /root/.config_registry
-echo "if [ -f ~/.config_registry ]; then ./.registry.sh; rm -f ~/.config_registry; fi" >> /root/.bashrc
+#give passwordless sudo to student temporarily
+echo "student ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/student
+
+#here we create our local registry and activate it
+su - student << 'EOF'
+export XDG_RUNTIME_DIR=/run/user/$(id -u student)
+export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u student)/bus
+mkdir -pv ~/registry &>> /dev/null
+sudo loginctl enable-linger student &>> /dev/null
+podman run -d --name registry -p 5000:5000 -v ~/registry:/var/lib/registry:Z registry:2 &>> /dev/null
+mkdir -pv ~/.config/systemd/user &>> /dev/null
+cd ~/.config/systemd/user
+podman generate systemd -n registry -f &>> /dev/null
+systemctl --user daemon-reload &>> /dev/null
+podman pull docker.io/library/httpd &>> /dev/null
+podman pull docker.io/library/mariadb &>> /dev/null
+podman tag docker.io/library/httpd server1:5000/httpd &>> /dev/null
+podman tag docker.io/library/mariadb server1:5000/mariadb &>> /dev/null
+podman push server1:5000/httpd &>> /dev/null
+podman push server1:5000/mariadb &>> /dev/null
+podman stop registry &>> /dev/null
+systemctl --user enable container-registry.service &>> /dev/null
+EOF
+
+#here we undo the passwordless sudo for student
+rm -f /etc/sudoers.d/student
 
 echo "container config complete" &>>"${LOG}"
 }
